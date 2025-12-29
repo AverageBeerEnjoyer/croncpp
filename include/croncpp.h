@@ -210,6 +210,8 @@ namespace cron
       friend std::string to_cronstr(cronexpr const& cex);
       friend std::string to_string(cronexpr const & cex);
 
+      friend bool is_initialized(cronexpr const& cex);
+
       template <typename Traits>
       friend cronexpr make_cron(CRONCPP_STRING_VIEW expr);
    };
@@ -228,6 +230,10 @@ namespace cron
    inline bool operator!=(cronexpr const & e1, cronexpr const & e2)
    {
       return !(e1 == e2);
+   }
+
+   inline bool is_initialized(cronexpr const& cex ){
+      return !cex.expr.empty();
    }
 
    inline std::string to_string(cronexpr const & cex)
@@ -865,6 +871,8 @@ namespace cron
    template <typename Traits = cron_standard_traits>
    static std::tm cron_next(cronexpr const & cex, std::tm date)
    {
+      if(!is_initialized(cex))
+        throw bad_cronexpr("Cron expr is not initialized");
       time_t original = utils::tm_to_time(date);
       if (INVALID_TIME == original) return {};
 
@@ -887,6 +895,8 @@ namespace cron
    template <typename Traits = cron_standard_traits>
    static std::time_t cron_next(cronexpr const & cex, std::time_t const & date)
    {
+      if(!is_initialized(cex))
+        throw bad_cronexpr("Cron expr is not initialized");
       std::tm val;
       std::tm* dt = utils::time_to_tm(&date, &val);
       if (dt == nullptr) return INVALID_TIME;
